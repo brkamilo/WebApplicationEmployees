@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Employee List</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+</head>
+<body>
+    <h1>Employee List</h1>
+
+    <div id="employee-container"></div>
+    <!-- Employee ID Search -->
+    <div class="form-group">
+        <label for="employeeId">Employee ID:</label>
+        <input type="text" id="employeeId" class="form-control">
+    </div>
+
+    <!-- Search Button -->
+    <button class="btn btn-primary" onclick="searchEmployees()">Search</button>
+    <table class="table table-striped mt-4" id="employeeTable">
+        <thead>
+            <tr>
+                <th>Employee ID</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Salary</th>
+                <th>Annual Salary</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    <script>
+
+
+
+
+        function searchEmployees() {
+            var searchId = document.getElementById("employeeId").value;
+            var employeeTable = document.getElementById("employeeTable");
+            var noEmployeesFound = document.getElementById("noEmployeesFound");
+            // Clear existing table rows
+            while (employeeTable.rows.length > 1) {
+                employeeTable.deleteRow(1);
+            }
+
+            // Make a request to fetch employee data
+            var url = "/api/employees/Details"; // Replace with the actual API URL to fetch employee data
+
+            // If the search ID is provided, append it to the API URL
+            if (searchId) {
+                url += "/" + searchId;
+                if (!isNaN(searchId)) {
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            const employeeContainer = document.getElementById('employee-container');
+                            if (data) {
+                                // Populate the table with employee data
+                                var row = employeeTable.insertRow();
+                                row.insertCell().innerText = data.id;
+                                row.insertCell().innerText = data.employee_name;
+                                row.insertCell().innerText = data.employee_age;
+                                row.insertCell().innerText = "$ " + data.employee_salary;
+                                row.insertCell().innerText = "$ " + data.employee_annual_salary;
+
+                                noEmployeesFound.style.display = "none";
+                            } else {
+                                noEmployeesFound.style.display = "block";
+                            }
+                        })
+                        .catch(function (error) {
+                            console.log("Error fetching employee data: ", error);                           
+                        });
+                }
+                else {
+                    alert("A numeric value is required");
+                }
+            }
+            else {
+                fetch('/api/employees')
+                    .then(response => response.json())
+                    .then(data => {
+                        const employeeContainer = document.getElementById('employee-container');
+
+                        data.forEach(employee => {
+                            var row = employeeTable.insertRow();
+                            row.insertCell().innerText = employee.id;
+                            row.insertCell().innerText = employee.employee_name;
+                            row.insertCell().innerText = employee.employee_age;
+                            row.insertCell().innerText = "$ " + employee.employee_salary;
+                            row.insertCell().innerText = "$ " + employee.employee_annual_salary;
+                        });
+                    })
+                    .catch(function (error) {
+                        console.log("Error fetching employee data: ", error);
+                    });
+            }
+
+
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            var employeeTable = document.getElementById("employeeTable");
+            employeeTable.classList.add("table", "table-striped");
+        });
+    </script>
+</body>
+</html>
